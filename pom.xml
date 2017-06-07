@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>bradleyross.tutorials</groupId>
+  <artifactId>midi-music</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Midi music examples</name>
+  <description>Example of Java to access MIDI devices</description>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.4</version>
+          <configuration> 
+            <!--
+                 http://stackoverflow.com/questions/3084629/finding-the-root-directory-of-a-multi-module-maven-reactor-project?rq=1
+            -->
+            <overview>${session.executionRootDirectory}/src/main/javadoc/overview.html</overview>
+            <additionalparam>-Xdoclint:none</additionalparam>
+            <quiet>true</quiet>
+            <linksource>true</linksource>
+            <offlineLinks>
+              <offlineLink>
+                <url>http://www.slf4j.org/api/</url>
+                <location>${session.executionRootDirectory}/src/main/javadoc/slf4j</location>
+              </offlineLink>            
+            </offlineLinks>
+            <failOnError>false</failOnError>
+            <show>private</show>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
