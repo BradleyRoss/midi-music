@@ -1,7 +1,7 @@
 /**
  * 
  */
-package bradleyross.test;
+package bradleyross.music.playpen;
 import javax.sound.midi.Instrument;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiChannel;

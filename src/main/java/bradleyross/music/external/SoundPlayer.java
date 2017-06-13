@@ -1,9 +1,10 @@
-package bradleyross.test;
+package bradleyross.music.external;
 import java.io.*;
 import java.net.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.JSlider;
 import javax.swing.event.*;
 import javax.swing.border.*;
 import javax.sound.sampled.*;

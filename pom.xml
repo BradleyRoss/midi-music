@@ -8,6 +8,22 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  <dependencies>
+      <dependency>
+        <groupId>gnu.getopt</groupId>
+        <artifactId>java-getopt</artifactId>
+        <version>1.0.13</version>
+      </dependency>
+      <!-- 
+            https://github.com/pdudits/soundlibs
+            https://code.google.com/p/soundlibs
+       -->
+      <dependency>
+        <groupId>com.googlecode.soundlibs</groupId>
+        <artifactId>tritonus-all</artifactId>
+        <version>0.3.7.2</version>
+      </dependency>
+  </dependencies>
   <build>
     <pluginManagement>
       <plugins>
@@ -29,6 +45,9 @@
                 <location>${session.executionRootDirectory}/src/main/javadoc/slf4j</location>
               </offlineLink>            
             </offlineLinks>
+            <links>
+              <link>http://www.gnu.org/software/gnuprologjava/api</link>
+            </links>
             <failOnError>false</failOnError>
             <show>private</show>
           </configuration>
