@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Actions of programs in org.jsresources package</title>
+<meta charset="UTF-8">
+</head>
+<body>
+<h2>DumpJSInfo</h2>
+<h2>DumpSequence</h2>
+<p><code>java org.jsresources.DumpSequence /Users/bradleyross/Downloads/AGNICRT.MID</code></p>
+<p>This dumped the contents of the MIDI file in a human readable format.</p>
+<h2>MidiFileInfo</h2>
+<p><code>java org.jsresources.MidiFileInfo /Users/bradleyross/Downloads/AGNICRT.MID</code></p>
+<p>This displays information about the MIDI file.</p>
+<h2>MidiInDump</h2>
+<ul>
+<li><p><code>java org.jsresources.MidiInDump -l</code></p>
+    <p>When I ran this command, I had a KORG nanokey controller attached.  This MIDI device
+       had the name KEYBOARD and was displayed as input device 1.  Input device 3 was the
+       Real Time Sequencer.</p>
+    </li>
+<li><p><code>java org.jsresources.MidiInDump -d KEYBOARD</code></p>
+    <p>While the program was running, a line of text was displayed whenever a key on the KEYBOARD
+       device was depressed or released.  This continued until the program was halted with
+       CTRL-C.</p>
+    <li>
+<li><p><code>java.org.jsresouces.MidiInDump -n 1</code></p>
+    <p>This had the same results as above since the KEYBOARD device was device number 1.</p>
+    </li>
+</ul>
+<h2>MidiNote</h2>
+    <p><code>java org.jsresources.MidiNote "Gervill" 38  60 10000</code></p>
+    <p>Gervill was the name of the Synthesizer.  When I entered the command,
+       something appeared to happen, but there was no sound.  It may be necessary to initialize the
+       synthesizer.  The logical approach would be to compare the code MidiNote to MidiPlayer.</p>
+<h2>MidiPlayer</h2>
+<p><code>java org.jsresources.MidiPlayer /Users/bradleyross/Downloads/AGNICRT.MID</code></p>
+<p>When the command is entered, the MIDI file is played through the speakers.</p>
+<h2>SynthNote</h2>
+<p><code>java org.jsresources.SynthNote 38 60 10000</code></p>
+<p>No sound was generated when the program was run.</p>
+</body>
+</html>
