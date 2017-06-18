@@ -1,5 +1,4 @@
-
-rg.apache.commons.logging
+org.apache.commons.logging
 org.apache.commons.logging.impl
 org.apache.log4j
 org.apache.log4j.helpers
