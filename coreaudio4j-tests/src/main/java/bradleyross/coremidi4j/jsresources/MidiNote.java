@@ -1,5 +1,18 @@
-package bradleyross.coremidij.jsresources;
-/*
+package bradleyross.coremidi4j.jsresources;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.MidiMessage;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.SysexMessage;
+import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
+import uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification;
+import uk.co.xfactorylibrarians.coremidi4j.CoreMidiException;
+import javax.sound.midi.MidiDevice;
+
+/**
  *	MidiNote.java
  *
  *	This file is part of jsresources.org
@@ -37,14 +50,7 @@ package bradleyross.coremidij.jsresources;
 |<---            this code is formatted to fit into 80 columns             --->|
 */
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Receiver;
-import javax.sound.midi.MidiMessage;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.SysexMessage;
+
 
 
 // TODO: an optional delay parameter that is added to getMicrosecondPosition to be used as timestamp for the event delivery.
@@ -110,9 +116,19 @@ public class MidiNote
 	private static boolean		DEBUG = true;
 
 
-
+/**
+ * Main driver.
+ * @param args First and only parameter is name of output MIDI device
+ */
 	public static void main(String[] args)
 	{
+		try {
+		Class.forName(
+                "uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
 		// TODO: make settable via command line
 		int	nChannel = 0;
 

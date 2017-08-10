@@ -1,5 +1,6 @@
 /**
- * Example programs from GitHub DerekCook/CoreMidi4J
+ * Example programs using project DerekCook/CoreMidi4J from GitHub.
+ * 
  * @author Bradley Ross
  *
  */

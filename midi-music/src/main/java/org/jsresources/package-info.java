@@ -1,5 +1,5 @@
 /**
- *  These are samples from Java Sound Resources.
+ *  These are samples from Java Sound Resources (MidiMusic subproject).
  *  <p>See <a href="doc-files/index.html" target="_blank">
  *     doc-files/index.html</a> for information on what 
  *     happened when I tried running the programs.</p>

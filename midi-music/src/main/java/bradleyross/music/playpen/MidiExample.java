@@ -1,21 +1,21 @@
 package bradleyross.music.playpen;
 import java.util.List;
-import java.util.ArrayList;
+// import java.util.ArrayList;
 import javax.sound.midi.MidiDeviceReceiver;
 import javax.sound.midi.MidiDeviceTransmitter;
-import javax.sound.midi.MidiMessage;
-import javax.sound.midi.MidiEvent;
+// import javax.sound.midi.MidiMessage;
+// import javax.sound.midi.MidiEvent;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Sequencer;
-import javax.sound.midi.Sequence;
+// import javax.sound.midi.Sequence;
 import javax.sound.midi.Synthesizer;
-import javax.sound.midi.Track;
+// import javax.sound.midi.Track;
 import javax.sound.midi.Transmitter;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiDevice.Info;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.InvalidMidiDataException;
+// import javax.sound.midi.InvalidMidiDataException;
 /**
  * I am trying to write code that will convert key presses on keyboard to music.
  * 

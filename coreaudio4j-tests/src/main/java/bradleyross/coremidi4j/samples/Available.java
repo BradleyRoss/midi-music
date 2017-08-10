@@ -4,7 +4,7 @@ package bradleyross.coremidi4j.samples;
 /**
  * Demonstration driver for CoreMidi4J.
  * 
- * <>This is part of the demonstration code contained in the 
+ * <p>This is part of the demonstration code contained in the 
  *   documentation for the DerekCook/CoreMidi4J.</p>
  *   
  * @author Derek Cook

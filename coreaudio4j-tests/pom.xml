@@ -11,11 +11,7 @@
                the lack of this code has caused a number of problems for MIDI Java applications
                on Mac OS X such as the application failing to close and an
                inability to process some midi-commands.</description>
-  <parent>
-     <groupId>bradleyross.midi-music</groupId>
-     <artifactId>midi-music-parent</artifactId>
-     <version>0.0.1-SNAPSHOT</version>
-  </parent>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -40,35 +36,6 @@
         <version>1.0</version>
       </dependency>
   </dependencies>
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.10.4</version>
-          <configuration> 
-            <!--
-                 http://stackoverflow.com/questions/3084629/finding-the-root-directory-of-a-multi-module-maven-reactor-project?rq=1
-            -->
-            <overview>${session.executionRootDirectory}/src/main/javadoc/overview.html</overview>
-            <additionalparam>-Xdoclint:none</additionalparam>
-            <quiet>true</quiet>
-            <linksource>true</linksource>
-            <offlineLinks>
-              <offlineLink>
-                <url>http://www.slf4j.org/api/</url>
-                <location>${session.executionRootDirectory}/src/main/javadoc/slf4j</location>
-              </offlineLink>            
-            </offlineLinks>
-            <links>
-              <link>http://www.gnu.org/software/gnuprologjava/api</link>
-            </links>
-            <failOnError>false</failOnError>
-            <show>private</show>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+
+  <version>0.0.1-SNAPSHOT</version>
 </project>

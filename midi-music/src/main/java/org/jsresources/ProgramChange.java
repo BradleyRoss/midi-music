@@ -41,6 +41,7 @@ import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Synthesizer;
+// import java.io.IOException;
 
 
 
@@ -64,12 +65,18 @@ public class ProgramChange
 		 *	best resolution you can expect are 10 ms.
 		 */
 		int	nDuration = 2000;
-
-		int nBank = Integer.parseInt(args[0]);
-		int nProgram = Integer.parseInt(args[1]);
+		int nBank;
+		int nProgram;
+		if (args.length == 0) {
+			nBank = 0;
+			nProgram = 40;		
+		} else {
+		nBank = Integer.parseInt(args[0]);
+		nProgram = Integer.parseInt(args[1]);
+		}
 
 		Synthesizer synthesizer = MidiSystem.getSynthesizer();
-		out("Synthsizer: " + synthesizer);
+		out("Synthesizer: " + synthesizer);
 		/* Don't forget to open the Synthesizer!
 		   (One of the most common mistakes.)
 		*/

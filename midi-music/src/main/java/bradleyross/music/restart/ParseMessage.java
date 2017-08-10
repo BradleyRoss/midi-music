@@ -3,17 +3,17 @@ package bradleyross.music.restart;
 import javax.sound.midi.MidiMessage;
 
 public class ParseMessage {
-	protected int debugFlag = 0;
-	public void setDebugFlag(int value) {
+	protected static int debugFlag = 1;
+	public static void setDebugFlag(int value) {
 		debugFlag = value;
 	}
-	public int getDebugFlag() {
+	public static int getDebugFlag() {
 		return debugFlag;
 	}
 
-	public String parseMessage(MidiMessage message) {
+	public static String parseMessage(MidiMessage message) {
 
-		StringBuffer build = new StringBuffer();
+		StringBuffer build2 = new StringBuffer();
 		int length = message.getLength();
 		int status = message.getStatus();
 		int typeCode = status/16;
@@ -27,7 +27,7 @@ public class ParseMessage {
 					Integer.toString(typeCode) + " " +
 					Integer.toString(channel));
 			for (int i = 0; i < length; i++) {
-				inter.append(" " + String.format("%0x2", data[i]));
+				inter.append(" " + String.format("%O2x", data[i]));
 			}
 			System.out.println(inter.toString());
 		}
@@ -68,24 +68,24 @@ public class ParseMessage {
 		
 		if (typeCode >= 8 && typeCode <= 10) {
 
-			build.append(typeName + " - Chan " + Integer.toString(channel) +
+			build2.append(typeName + " - Chan " + Integer.toString(channel) +
 					" Note: " + Integer.toString(data2) +
 					" Vel/Press: " + Integer.toString(data3) +
 					System.lineSeparator());
 		} else if (typeCode == 12) {
-			build.append(typeName + " - Chan " + Integer.toString(channel) +
+			build2.append(typeName + " - Chan " + Integer.toString(channel) +
 					" Data " + Integer.toString(data2) +
 					System.lineSeparator());
 		} else if (typeCode >= 11 && typeCode <= 14) {
-			build.append(typeName + " - Chan " + Integer.toString(channel) +
+			build2.append(typeName + " - Chan " + Integer.toString(channel) +
 					" Data 1: " + Integer.toString(data2) +
 					" Data 2: " + Integer.toString(data3) +
 					System.lineSeparator());
 		} else {
-			build.append("     " +
+			build2.append("     " +
 					Integer.toString(status, 16) + ", " +
 					Integer.toString(length));
-			build.append(", ");
+			build2.append(", ");
 			for (int i = 0; i < data.length; i++) {
 				/*  
 				 *  Byte.toUnsignedInt(byte) appears to
@@ -93,16 +93,16 @@ public class ParseMessage {
 				 */
 				int temp = Byte.toUnsignedInt(data[i]);
 				if (temp < 16) {
-					build.append("0" + Integer.toString(temp,16));
+					build2.append("0" + Integer.toString(temp,16));
 				} else {
-					build.append(Integer.toString(temp,16));
+					build2.append(Integer.toString(temp,16));
 				}
 				if (i > 10) {
 					break;
 				}
 			}
-			build.append(" ");
+			build2.append(" ");
 		}
-		return build.toString();
+		return build2.toString();
 	}
 }

@@ -1,4 +1,4 @@
-package bradleyross.coremidij.jsresources;
+package bradleyross.coremidi4j.jsresources;
 /*
  *	MixingFloatAudioInputStream
  *

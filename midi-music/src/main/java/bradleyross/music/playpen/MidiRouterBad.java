@@ -35,6 +35,7 @@ import javax.sound.midi.Receiver;
 // import javax.sound.midi.MidiDeviceReceiver;
 // import javax.sound.midi.MidiDeviceTransmitter;
 import javax.sound.midi.MidiMessage;
+// import javax.sound.midi.ShortMessage;
 import javax.sound.midi.MidiChannel;
 import javax.swing.SwingUtilities;
 import javax.swing.JFrame;
@@ -67,7 +68,7 @@ import javax.swing.JLabel;
  * @see BoxLayout
  *
  */
-public class MidiRouter implements Runnable{
+public class MidiRouterBad implements Runnable{
 	/**
 	 * A value of zero means no diagnostic output, while 
 	 * higher values create more output.
@@ -138,6 +139,8 @@ public class MidiRouter implements Runnable{
 		 * Specifying a {@link MidiDevice.Info} object.
 		 */
 		INFO }
+	LogReceiver logReceiver = null;	
+
 	/**
 	 * Constructs the menu bar.
 	 * 
@@ -145,7 +148,7 @@ public class MidiRouter implements Runnable{
 	 *
 	 */
 	protected class MidiMenuBar implements ActionListener {
-		Receiver logReceiver = new LogReceiver();
+
 		JMenuItem toggleLog = null;
 		/**
 		 * This is the menu bar for the application.
@@ -192,7 +195,7 @@ public class MidiRouter implements Runnable{
 			setLog.addActionListener(this);
 			toggleLog = new JMenuItem();
 			if (useLogWindow) {
-			toggleLog.setText("Turn Log Window off");
+				toggleLog.setText("Turn Log Window off");
 			} else {
 				toggleLog.setText("Turn Log Window on");
 			}
@@ -220,7 +223,7 @@ public class MidiRouter implements Runnable{
 		 * 
 		 * @param e action transmitted from clicking menu item
 		 */
-		@Override
+
 		public void actionPerformed(ActionEvent e) {
 			try {
 				String command = e.getActionCommand();
@@ -283,11 +286,19 @@ public class MidiRouter implements Runnable{
 						showPopup("Problem", "No log file selected");
 					}
 				} else if (command.equalsIgnoreCase("openConnection")) {
+
 					selectionLocked = true;
+					if (useLogWindow && logReceiver == null) {
+						logReceiver = new LogReceiver();
+					}
 					if (debugFlag > 0) {
 						System.out.println("Open Connection menu item clicked");
 						if (selectedSource != null && selectedSource.isSequencer) {
-							System.out.println("Source is sequencer");
+							System.out.print("Source is sequencer with ");
+							int xmtrCount = 
+									selectedSource.getMidiDevice().getTransmitters().size();
+							System.out.println(Integer.toString(xmtrCount) + 
+									" transmitters");
 						}
 						if (selectedDest != null && selectedDest.isSequencer) {
 							System.out.println("Destination is sequencer");
@@ -324,15 +335,31 @@ public class MidiRouter implements Runnable{
 						return;
 					}
 					if (useLogWindow) {
-						StringBuffer text = 
-								new StringBuffer("Starting setup of connection to log window");
-						showPopup("Information", text.toString());
-						logConnection.setSourceDevice(selectedSource.getMidiDevice());
+						if (debugFlag > 0) {
+							StringBuffer text = new StringBuffer();
+							text.append("Starting setup of connection to log window");
+							if (debugFlag > 5) {
+								showPopup("Information", text.toString());
+							} else {
+								System.out.println(text.toString());
+							}
+						}
+						MidiDevice sourceDevice = selectedSource.getMidiDevice();
+						if (debugFlag > 0) {
+							System.out.println("MidiDevice for source obtained");
+						}
+						logConnection.setSourceDevice(sourceDevice);
 						logConnection.setDestReceiver(logReceiver);
 						logConnection.openConnection();
 						if (debugFlag > 0) {
 							System.out.println("Log connection opened");
+							int xmtrCount = sourceDevice.getTransmitters().size();
+							System.out.println("Source has " + Integer.toString(xmtrCount) +
+									" transmitters");
 						}
+					}
+					if (debugFlag > 0) {
+						System.out.println("Starting data connection");
 					}
 					MidiDevice sourceMidiDevice = selectedSource.getMidiDevice();
 					connection.setSourceDevice(sourceMidiDevice);
@@ -359,7 +386,8 @@ public class MidiRouter implements Runnable{
 						StringBuffer text2 = new StringBuffer("There are " +
 								Integer.toString(source.getTransmitters().size()) +
 								" transmitters for source");
-						showPopup("Information", text2.toString());
+						System.out.println(text2.toString());
+						// showPopup("Information", text2.toString());
 					}
 					if (selectedSource.isSequencer) {
 						if (debugFlag > 0) {
@@ -375,6 +403,10 @@ public class MidiRouter implements Runnable{
 					connection.closeConnection();
 					if (useLogWindow) {
 						logConnection.closeConnection();
+						logReceiver.close();
+						if (debugFlag > 0) {
+							System.out.println("Log connection closed");
+						}
 					}
 					selectedSource.getMidiDevice().close();
 					selectedDest.getMidiDevice().close();
@@ -383,10 +415,10 @@ public class MidiRouter implements Runnable{
 					if (useLogWindow) {
 						useLogWindow = false;
 						toggleLog.setText("Turn Log Window on");
-						} else {
-							useLogWindow = true;
-							toggleLog.setText("Turn Log Window off");
-						}
+					} else {
+						useLogWindow = true;
+						toggleLog.setText("Turn Log Window off");
+					}
 				}
 			} catch (HeadlessException e2) {
 				e2.printStackTrace();
@@ -430,7 +462,7 @@ public class MidiRouter implements Runnable{
 		 */
 		public void setSourceDevice(MidiDevice value) throws MidiUnavailableException {
 			if (debugFlag > 0) {
-				showPopup("Information", "Starting Connection.setSourceDevice");
+				System.out.println("Starting Connection.setSourceDevice");
 			}
 			sourceType = specType.DEVICE;
 			sourceDevice = value;
@@ -474,7 +506,7 @@ public class MidiRouter implements Runnable{
 		}
 		public void setSourceTransmitter(Transmitter value) {
 			if (debugFlag > 0) {
-				showPopup("Information", "Starting Connection.setSourceTransmitter");
+				System.out.println("Starting Connection.setSourceTransmitter");	
 			}
 			if (value == null) {
 				throw new NullPointerException("Input value is null");
@@ -507,7 +539,7 @@ public class MidiRouter implements Runnable{
 				throw new NullPointerException("Input value is null");
 			}
 			if (debugFlag > 0) {
-				showPopup("Information", "Starting Connection.setDestDevice");
+				System.out.println("Starting Connection.setDestDevice");
 			}
 			destDevice = value;
 			destType = specType.DEVICE;
@@ -553,7 +585,11 @@ public class MidiRouter implements Runnable{
 				if (value == null) {
 					text3.append("Input parameter is null");
 				}
-				showPopup("Information", text3.toString());
+				if (debugFlag > 5) {
+					showPopup("Information", text3.toString());
+				} else {
+					System.out.println(text3.toString());
+				}
 			}
 			if (value == null) {
 				throw new NullPointerException("Input value is null");
@@ -573,20 +609,47 @@ public class MidiRouter implements Runnable{
 		}
 		public void openConnection() 
 				throws MidiUnavailableException, IOException, InvalidMidiDataException {
+			if (debugFlag > 0) {
+				System.out.println("*****  *****");
+				System.out.println("Starting Connection.openConnection");
+			}
 			if (destType == specType.DEVICE || destType == specType.INFO) {
-				destDevice.open();
-				receiver = 	destDevice.getReceiver();
+				if (!destDevice.isOpen()) {
+					destDevice.open();
+				}
+				receiver = 	destReceiver;
+				if (debugFlag > 0) {
+
+					System.out.println("Destination is " + 
+							destDevice.getDeviceInfo().getName());	
+					System.out.println("Destination is open " +
+							Boolean.toString(destDevice.isOpen()));
+				}
 			}
 			if (destType == specType.RECEIVER) {
 				receiver = destReceiver;
 
 			}
 			if (sourceType == specType.DEVICE || sourceType == specType.INFO) {
-				transmitter = sourceDevice.getTransmitter();
+				if (!sourceDevice.isOpen()) {
+					sourceDevice.open();
+				}	
+
+
+				if (debugFlag > 0) {
+					System.out.println("Source is " + 
+							sourceDevice.getDeviceInfo().getName());	
+					System.out.println("Source is open " +
+							Boolean.toString(sourceDevice.isOpen()));
+				}
 			}
-			if (sourceType == specType.TRANSMITTER) {
-				transmitter = sourceTransmitter;
+			transmitter = sourceTransmitter;
+			if (debugFlag > 0) {
+				int xmtrCount = sourceDevice.getTransmitters().size();
+				System.out.println("Source has " + Integer.toString(xmtrCount) +
+						" transmitters");
 			}
+
 			transmitter.setReceiver(receiver);
 			active = true;
 		}
@@ -594,7 +657,6 @@ public class MidiRouter implements Runnable{
 			transmitter.close();
 			receiver.close();
 			active = false;
-
 		}
 	}
 	/**
@@ -711,7 +773,7 @@ public class MidiRouter implements Runnable{
 		protected void setMidiDeviceInfo(MidiDevice.Info value) {
 			info = value;
 		}
-		@Override
+
 		public void mouseClicked(MouseEvent event) {
 			if (selectionLocked) { return; }
 			if (selected) {
@@ -728,6 +790,7 @@ public class MidiRouter implements Runnable{
 			}
 			if (debugFlag > 0) {
 				StringBuffer diag1 = new StringBuffer();
+				diag1.append("Cell in list clicked");
 				diag1.append("Selected source is ");
 				if (selectedSource == null) {
 					diag1.append("null");
@@ -741,16 +804,17 @@ public class MidiRouter implements Runnable{
 					diag1.append("not null");
 				}
 				diag1.append(System.lineSeparator());
-				showPopup("Information", diag1.toString());
+				System.out.println(diag1.toString());
+				// showPopup("Information", diag1.toString());
 			}
 		}
-		@Override
+
 		public void mousePressed(MouseEvent e) { ; }
-		@Override
+
 		public void mouseReleased(MouseEvent e) { ; }
-		@Override
+
 		public void mouseEntered(MouseEvent e) { ; }
-		@Override
+
 		public void mouseExited(MouseEvent e) { ; }
 		protected void clear() {
 			selected = false;
@@ -933,10 +997,12 @@ public class MidiRouter implements Runnable{
 	protected class LogReceiver implements Receiver {
 		DisplayFrame display = null;
 		boolean isOpen = false;
+		int counter = 0;
 		public LogReceiver() {
 			display = new DisplayFrame();
 			display.open();
 			isOpen = true;
+
 		}
 		/**
 		 * Used by MIDI transmitter to send message to this receiver.
@@ -949,36 +1015,107 @@ public class MidiRouter implements Runnable{
 		 * @param message string of bytes containing message
 		 * @param timeStamp time generated by transmitting device
 		 */
-		@Override
+
 		public void send(MidiMessage message, long timeStamp) {
+
 			StringBuffer build = new StringBuffer();
 			int length = message.getLength();
 			int status = message.getStatus();
-			build.append(Long.toString(timeStamp) + ", " +
-					Integer.toString(status, 16) + ", " +
-					Integer.toString(length));
-			byte[] data = message.getMessage();	
-			build.append(", ");
-			for (int i = 0; i < data.length; i++) {
-				/*  
-				 *  Byte.toUnsignedInt(byte) appears to
-				 *  start with Java 8.
-				 */
-				int temp = Byte.toUnsignedInt(data[i]);
-				if (temp < 16) {
-					build.append("0" + Integer.toString(temp,16));
-				} else {
-					build.append(Integer.toString(temp,16));
+			int typeCode = status/16;
+			int channel = status % 16;
+			byte[] data = message.getMessage();
+			if (debugFlag > 0) {
+				counter++;
+				StringBuffer inter = new StringBuffer();
+				inter.append(Integer.toString(counter));
+				inter.append(" LogReceiver.send - Status: " +
+						Integer.toString(status) + " Length: " +
+						Integer.toString(length) + " " +
+						Integer.toString(typeCode) + " " +
+						Integer.toString(channel));
+				for (int i = 0; i < length; i++) {
+					inter.append(" " + String.format("%O2x", data[i]));
 				}
-				if (i > 10) {
-					break;
+				System.out.println(inter.toString());
+			}
+
+			int data2 = -1;
+			int data3 = -1;
+			if (length > 1) {
+				data2 = data[2];
+				if (data2 < 0) {
+					data2 = data2 + 256;
+				}
+			}
+			if (length > 2) {
+				data3 = data[3];
+				if (data3 < 0) {
+					data3 = data3 + 256;
+				}
+			}
+
+			String typeName;
+			if (typeCode == 8) {
+				typeName = "Note Off";
+			} else if (typeCode == 9) {
+				typeName = "Note On";
+			} else if (typeCode == 10) {
+				typeName = "Polyphonic Aftertouch";
+			} else if (typeCode == 11) {
+				typeName = "Control/Mode Change";
+			} else if (typeCode == 12) {
+				typeName = "Program Change";
+			} else if (typeCode == 13) {
+				typeName = "Channel Aftertouch";
+			} else if (typeCode == 14) {
+				typeName = "Pitch Bend Change";
+			} else {
+				typeName = "Not Listed";
+			}
+			if (typeCode >= 8 && typeCode <= 10) {
+
+				build.append(typeName + " - Chan " + Integer.toString(channel) +
+						" Note: " + Integer.toString(data2) +
+						" Vel/Press: " + Integer.toString(data3) +
+						" Timestamp: " +Long.toString(timeStamp) +
+						System.lineSeparator());
+			} else if (typeCode == 12) {
+				build.append(typeName + " - Chan " + Integer.toString(channel) +
+						" Data " + Integer.toString(data2) +
+						System.lineSeparator());
+			} else if (typeCode >= 11 && typeCode <= 14) {
+				build.append(typeName + " - Chan " + Integer.toString(channel) +
+						" Data 1: " + Integer.toString(data2) +
+						" Data 2: " + Integer.toString(data3) +
+						" Timestamp: " +Long.toString(timeStamp) +
+						System.lineSeparator());
+			} else {
+				build.append("     " + Long.toString(timeStamp) + ", " +
+						Integer.toString(status, 16) + ", " +
+						Integer.toString(length));
+				build.append(", ");
+				for (int i = 0; i < data.length; i++) {
+					/*  
+					 *  Byte.toUnsignedInt(byte) appears to
+					 *  start with Java 8.
+					 */
+					int temp = Byte.toUnsignedInt(data[i]);
+					if (temp < 16) {
+						build.append("0" + Integer.toString(temp,16));
+					} else {
+						build.append(Integer.toString(temp,16));
+					}
+					if (i > 10) {
+						break;
+					}
 				}
 				build.append(" ");
 			}
 			display.write(build.toString());
 		}
 		public void close() {
-			
+			display.getJFrame().setVisible(false);
+			display.getJFrame().dispose();
 		}
 
 	}
@@ -1207,7 +1344,7 @@ public class MidiRouter implements Runnable{
 	 * @param args not used in this application
 	 */
 	public static void main(String[] args) {
-		MidiRouter instance = new MidiRouter();
+		MidiRouterBad instance = new MidiRouterBad();
 		instance.run();
 		// instance.testDisplayFrame();
 		// instance.testLogReceiver();

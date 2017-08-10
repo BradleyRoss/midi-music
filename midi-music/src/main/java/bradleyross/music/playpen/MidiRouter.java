@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 // import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.GregorianCalendar;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiUnavailableException;
@@ -52,6 +53,7 @@ import javax.swing.BoxLayout;
 import javax.swing.BorderFactory;
 // import javax.swing.JTextField;
 import javax.swing.JLabel;
+import bradleyross.music.restart.ParseMessage;
 /**
  * Sample Java MIDI router.
  * 
@@ -290,9 +292,18 @@ public class MidiRouter implements Runnable{
 						}
 						if (selectedDest != null && selectedDest.isSequencer) {
 							System.out.println("Destination is sequencer");
+							
 						}
 						if (selectedDest != null && selectedDest.isSynthesizer) {
 							System.out.println("Destination is synthesizer");
+							Synthesizer synth = (Synthesizer) selectedDest.getMidiDevice();
+							if (!synth.isOpen()) {
+								synth.open();
+							}
+							MidiChannel[] channels = synth.getChannels();
+							for (MidiChannel item : channels) {
+							item.programChange(0, 40);
+							}
 						}
 					}
 					if (selectedSource == null) {
@@ -435,6 +446,7 @@ public class MidiRouter implements Runnable{
 			sourceDevice = value;
 			sourceInfo = value.getDeviceInfo();
 			sourceTransmitter = sourceDevice.getTransmitter();
+			transmitter = sourceTransmitter;
 			if (Sequencer.class.isAssignableFrom(sourceDevice.getClass())) {
 				sourceIsSequencer = true;
 			}
@@ -480,6 +492,7 @@ public class MidiRouter implements Runnable{
 			}
 			sourceType = specType.TRANSMITTER;
 			sourceTransmitter = value;
+			transmitter = sourceTransmitter;
 		}
 		public MidiDevice.Info getSourceInfo() {
 			return sourceInfo;
@@ -501,7 +514,7 @@ public class MidiRouter implements Runnable{
 		protected boolean destIsSynthesizer  = false;
 		protected File destFile = null;
 		protected boolean active = false;
-		public void setDestDevice(MidiDevice value) {
+		public void setDestDevice(MidiDevice value) throws MidiUnavailableException {
 			if (value == null) {
 				throw new NullPointerException("Input value is null");
 			}
@@ -511,6 +524,8 @@ public class MidiRouter implements Runnable{
 			destDevice = value;
 			destType = specType.DEVICE;
 			destInfo = value.getDeviceInfo();
+			destReceiver = destDevice.getReceiver();
+			receiver = destReceiver;
 			if (Sequencer.class.isAssignableFrom(destDevice.getClass())) {
 				destIsSequencer = true;
 			}
@@ -548,9 +563,9 @@ public class MidiRouter implements Runnable{
 		public void setDestReceiver(Receiver value) {
 			if (debugFlag > 0) {
 				StringBuffer text3 = new StringBuffer();
-				text3.append("Starting Connection.setDestReceiver" + System.lineSeparator());
+				text3.append("Starting Connection.setDestReceiver");
 				if (value == null) {
-					text3.append("Input parameter is null");
+					text3.append(System.lineSeparator() + "Input parameter is null");
 				}
 				System.out.println(text3.toString());
 			}
@@ -559,6 +574,7 @@ public class MidiRouter implements Runnable{
 			}
 			destType = specType.RECEIVER;
 			destReceiver = value;
+			receiver = destReceiver;
 		}
 		public Receiver getDestReceiver() {
 			return destReceiver;
@@ -572,26 +588,47 @@ public class MidiRouter implements Runnable{
 		}
 		public void openConnection() 
 				throws MidiUnavailableException, IOException, InvalidMidiDataException {
+			System.out.println("Running Connection.openConnection");
 			if (destType == specType.DEVICE || destType == specType.INFO) {
-				destDevice.open();
+				// destDevice.open();
+				if (Synthesizer.class.isAssignableFrom(destDevice.getClass())) {
+					System.out.println("     Destination device is synthesizer");
+					System.out.println("     Synthesizer is open: " +
+							Boolean.toString(destDevice.isOpen()));
+					Synthesizer synth = (Synthesizer) destDevice;
+					int counter = 0;
+					for (MidiChannel item : synth.getChannels()) {
+						item.programChange(40);
+						counter++;
+						System.out.print(Integer.toString(item.getProgram()) + "  ");
+						if (counter % 4 == 0) { System.out.println(); }
+					}
+					System.out.println();
+				}
 				receiver = 	destReceiver;
-			}
-			if (destType == specType.RECEIVER) {
+			} else if (destType == specType.RECEIVER) {
 				receiver = destReceiver;
 
+			} else {
+				System.out.println("Receiver not set");
 			}
 			if (sourceType == specType.DEVICE || sourceType == specType.INFO) {
 				transmitter = sourceTransmitter;
-			}
-			if (sourceType == specType.TRANSMITTER) {
+			} else if (sourceType == specType.TRANSMITTER) {
 				transmitter = sourceTransmitter;
+			} else {
+				System.out.println("Transmitter not set");
 			}
 			transmitter.setReceiver(receiver);
 			active = true;
 		}
 		public void closeConnection() throws MidiUnavailableException {
+			if (sourceType != specType.TRANSMITTER) {
 			transmitter.close();
+			}
+			if (destType != specType.RECEIVER) {
 			receiver.close();
+			}
 			active = false;
 
 		}
@@ -733,7 +770,8 @@ public class MidiRouter implements Runnable{
 				} else {
 					diag1.append("not null");
 				}
-				System.out.println("Selected destination is ");
+				diag1.append(System.lineSeparator());
+				diag1.append("Selected destination is ");
 				if (selectedDest == null) {
 					diag1.append("null");
 				} else {
@@ -941,15 +979,31 @@ public class MidiRouter implements Runnable{
 		 *    https://www.midi.org/specifications/item/table-1-summary-of-midi-message</a>
 		 *    List of MIDI codes.
 		 *    <p>
+		 * <p>Why does this one work and not the other?</p>
 		 * @param message string of bytes containing message
 		 * @param timeStamp time generated by transmitting device
 		 */
+		public void send2(MidiMessage message, long timeStamp) {
+			StringBuffer out = new StringBuffer();
+			out.append("Time: " + Long.toString(timeStamp));
+			out.append("  ");
+			out.append(ParseMessage.parseMessage(message));
+			out.append(System.lineSeparator());
+			System.out.println(out.toString());
+			display.write(out.toString());
+		}
 		public void send(MidiMessage message, long timeStamp) {
 			StringBuffer build = new StringBuffer();
 			int length = message.getLength();
 			int status = message.getStatus();
-			build.append(Long.toString(timeStamp) + ", " +
-					Integer.toString(status, 16) + ", " +
+			String seconds = String.format("%06d", timeStamp / 1000000l);
+			String micros  = String.format("%06d", timeStamp % 1000000l);
+			if (timeStamp > 0) {
+				build.append(Long.toString(timeStamp));
+				// build.append("Time: " + seconds + "." + micros + ", ");
+			}
+			build.append(
+					String.format("%02x", status) + ", " +
 					Integer.toString(length));
 			byte[] data = message.getMessage();	
 			build.append(", ");
@@ -958,12 +1012,15 @@ public class MidiRouter implements Runnable{
 				 *  Byte.toUnsignedInt(byte) appears to
 				 *  start with Java 8.
 				 */
+				build.append(String.format("%02x", data[i]));
+				/*
 				int temp = Byte.toUnsignedInt(data[i]);
 				if (temp < 16) {
 					build.append("0" + Integer.toString(temp,16));
 				} else {
 					build.append(Integer.toString(temp,16));
 				}
+				*/
 				if (i > 10) {
 					break;
 				}

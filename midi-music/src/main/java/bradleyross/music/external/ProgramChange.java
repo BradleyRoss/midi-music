@@ -52,6 +52,7 @@ import javax.sound.midi.Synthesizer;
  *   Just a code fragment...</p>
  *   <p>This code was modified to set parameters if none were
  *      set on the command line.</p>
+ *      @see MidiChannel.programChange(int, int)
  */
 public class ProgramChange
 {
