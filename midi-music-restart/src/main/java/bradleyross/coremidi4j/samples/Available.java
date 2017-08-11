@@ -2,7 +2,7 @@
 package bradleyross.coremidi4j.samples;
 
 /**
- * Demonstration driver for CoreMidi4J.
+ * Obtains a list of devices and tests for changes in configuration.
  * 
  * <p>This is part of the demonstration code contained in the 
  *   documentation for the DerekCook/CoreMidi4J.</p>

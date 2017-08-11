@@ -10,13 +10,9 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
 // import javax.sound.midi.*;
 // import java.io.*;
-
-
-
-
-/* http://blog.taragana.com/index.php/archive/how-to-play-a-midi-file-from-a-java-application/ */
-
-
+/* 
+ * http://blog.taragana.com/index.php/archive/how-to-play-a-midi-file-from-a-java-application/ 
+ */
 /**
  * Plays a midi file provided on command line.
  * 
@@ -27,9 +23,6 @@ import javax.sound.midi.MidiUnavailableException;
  *    <a href="http://blog.taragana.com/index.php/archive/how-to-play-a-midi-file-from-a-java-application/"
  *    target="_blank">
  *    http://blog.taragana.com/index.php/archive/how-to-play-a-midi-file-from-a-java-application/</a></p>
- * <p>Running <code> java bradleyross.music.external.MidiPlayer ~/Downloads/AGNICRT.MID</code>
- *    played the music.  I just have to find out how this differs from my own
- *    program that won't play.</p>
  * @author Bradley Ross
  *
  */

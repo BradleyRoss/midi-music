@@ -3,4 +3,7 @@
 .classpath
 .project
 .settings/
+/midi-music-badRestart/
+/midi-music-restart/NewJava/
+/midi-music-restart/target/
 

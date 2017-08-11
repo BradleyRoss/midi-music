@@ -53,7 +53,6 @@ import javax.swing.BoxLayout;
 import javax.swing.BorderFactory;
 // import javax.swing.JTextField;
 import javax.swing.JLabel;
-import bradleyross.music.MidiRouter.ParseMessage;
 /**
  * Sample Java MIDI router.
  * 
@@ -75,16 +74,46 @@ public class MidiRouter implements Runnable{
 	 * higher values create more output.
 	 */
 	protected int debugFlag = 1;
+	/**
+	 * Outermost panel for the main window.
+	 */
 	protected JPanel outer;
+	/**
+	 * Pane at the top of the main window that
+	 * contains general information.
+	 */
 	protected JPanel top;
+	/**
+	 * Pane containing a list of potential MIDI
+	 * sources.
+	 */
 	protected JPanel left;
+	/**
+	 * Pane containing a list of potential MIDI
+	 * destinations.
+	 */
 	protected JPanel right;
+	/**
+	 * Swing {@link JFrame} attached to the main window.
+	 */
 	protected JFrame frame;
+	/**
+	 * Menu bar for the main window.
+	 */
 	protected JMenuBar menuBar;
 
 
 	protected String title;
+	/**
+	 * MIDI file to be used as source of MIDI information
+	 * (e.g.: {@link Sequencer}).
+	 */
 	protected File sourceFile;
+	/**
+	 * MIDI file to be used as destination of MIDI
+	 * information (e.g.: {@link Sequencer} and
+	 * {@link Synthesizer})
+	 */
 	protected File destFile;
 	protected MidiDevice.Info[] allDevices;
 	protected ArrayList<MidiDevice> sourceMidiDevices;
@@ -101,8 +130,15 @@ public class MidiRouter implements Runnable{
 	protected Listing selectedSource = null;
 	protected Listing selectedDest = null;
 	protected Connection connection = new Connection();
+	/**
+	 * This acts as a {@Link Receiver} of MIDI
+	 * information and displays the data in a window.
+	 */
 	protected LogReceiver logReceiver;
 	protected GregorianCalendar calendar;
+	/**
+	 * Time MIDI connection was opened.
+	 */
 	protected long musicStart;
 	/**
 	 * This Connection object will send information from the
@@ -115,7 +151,7 @@ public class MidiRouter implements Runnable{
 	 */
 	boolean selectionLocked = false;
 	/**
-	 * If true, Midi messages from the source will be echoed to a
+	 * If true, MIDI messages from the source will be echoed to a
 	 * Java Swing window.
 	 */
 	boolean useLogWindow = true;
@@ -416,7 +452,7 @@ public class MidiRouter implements Runnable{
 		}
 	}
 	/** 
-	 * Represents connection between Midi devices.
+	 * Represents connection between MIDI devices.
 	 * 
 	 * @author Bradley Ross
 	 *
@@ -481,6 +517,11 @@ public class MidiRouter implements Runnable{
 				ex.printStackTrace();
 			}
 		}
+		/**
+		 * Specifies the {@link Transmitter} object that is the
+		 * source of the MIDI data.
+		 * @param value
+		 */
 		public void setSourceTransmitter(Transmitter value) {
 			if (debugFlag > 0) {
 				System.out.println("Starting Connection.setSourceTransmitter");
@@ -586,7 +627,7 @@ public class MidiRouter implements Runnable{
 		public void openConnection() 
 				throws MidiUnavailableException, IOException, InvalidMidiDataException {
 			System.out.println("Running Connection.openConnection");
-			
+
 			musicStart = calendar.getTimeInMillis();
 			if (destType == specType.DEVICE || destType == specType.INFO) {
 				if (!destDevice.isOpen()) {
@@ -623,7 +664,7 @@ public class MidiRouter implements Runnable{
 				} else {
 					System.out.println("     Source device was open");
 				}
-				
+
 				transmitter = sourceDevice.getTransmitter();
 				sourceTransmitter = transmitter;
 			} else if (sourceType == specType.TRANSMITTER) {
@@ -701,6 +742,9 @@ public class MidiRouter implements Runnable{
 	/**
 	 * This represents a cell in the source or destinations column.
 	 * 
+	 * <p>The MIDI devices represented by these cells must be
+	 *    defined using a {@link MidiDevice} object.
+	 * 
 	 * @author Bradley Ross
 	 *
 	 */
@@ -714,11 +758,28 @@ public class MidiRouter implements Runnable{
 		protected List<Listing> parentList;
 		protected boolean isSynthesizer = false;
 		protected boolean isSequencer = false;
+		/**
+		 * Specify the MIDI device using a
+		 * {@link MidiDevice object}.
+		 * 
+		 * @param device identifies MIDI device
+		 */
 		public Listing(MidiDevice device) {
 			setMidiDevice(device);
 			setMidiDeviceInfo(device.getDeviceInfo());
 			createComponent();
 		}
+		/**
+		 * Specify the MIDI device using a {@link MidiDevice.Info} object.
+		 * 
+		 * <p>This is deprecated since 
+		 *    {@link MidiSystem.getMidiDevice(MidiDevice.Info)} can't 
+		 *    be relied upon to identify a single device, especially when
+		 *    dealing with synthesizers and sequencers.  The problem
+		 *    may be related to software MIDI devices.</p>
+		 *    
+		 * @param info identifies MIDI device
+		 */
 		@Deprecated
 		public Listing(MidiDevice.Info info) {
 			setMidiDeviceInfo(info);
@@ -729,6 +790,10 @@ public class MidiRouter implements Runnable{
 			}
 			createComponent();
 		}
+		/**
+		 * Creates the {@link JTextArea} object that contains
+		 * the content of the cell.
+		 */
 		protected void createComponent() {
 			StringBuffer text = new StringBuffer();
 			text.append(info.getName() + " : " + info.getVendor() +
@@ -764,6 +829,9 @@ public class MidiRouter implements Runnable{
 		protected void setMidiDeviceInfo(MidiDevice.Info value) {
 			info = value;
 		}
+		/**
+		 * Handles mouse clicks within the cell.
+		 */
 		public void mouseClicked(MouseEvent event) {
 			if (selectionLocked) { return; }
 			if (selected) {
@@ -797,7 +865,6 @@ public class MidiRouter implements Runnable{
 				System.out.println(diag1.toString());
 			}
 		}
-
 		public void mousePressed(MouseEvent e) { ; }
 		public void mouseReleased(MouseEvent e) { ; }
 		public void mouseEntered(MouseEvent e) { ; }
@@ -988,6 +1055,7 @@ public class MidiRouter implements Runnable{
 			display.open();
 			isOpen = true;
 		}
+
 		/**
 		 * Used by MIDI transmitter to send message to this receiver.
 		 * 
@@ -995,19 +1063,10 @@ public class MidiRouter implements Runnable{
 		 *    target="_blank">
 		 *    https://www.midi.org/specifications/item/table-1-summary-of-midi-message</a>
 		 *    List of MIDI codes.
-		 *    <p>
+		 *    </p>
 		 * @param message string of bytes containing message
 		 * @param timeStamp time generated by transmitting device
-		 */
-		public void send2(MidiMessage message, long timeStamp) {
-			StringBuffer out = new StringBuffer();
-			out.append("Time: " + Long.toString(timeStamp));
-			out.append("  ");
-			out.append(ParseMessage.parseMessage(message));
-			out.append(System.lineSeparator());
-			System.out.println(out.toString());
-			display.write(out.toString());
-		}
+		 */		
 		public void send(MidiMessage message, long timeStamp) {
 			StringBuffer build = new StringBuffer();
 			int length = message.getLength();
@@ -1033,21 +1092,6 @@ public class MidiRouter implements Runnable{
 				}
 				build.append(" ");
 			}
-			/*
-			build.append( Status: " +
-					String.format("%O2x", status) + ", Length: " +
-					Integer.toString(length));
-			byte[] data = message.getMessage();	
-			build.append(System.lineSeparator() + "     Data: ");
-			for (int i = 0; i < data.length; i++) {
-				build.append(String.format("%02x", data[i]));
-				if (i > 10) {
-					build.append(" ...");
-					break;
-				}
-				build.append(" ");
-			}
-			 */
 			display.write(build.toString());
 		}
 		public void close() {
@@ -1178,7 +1222,6 @@ public class MidiRouter implements Runnable{
 	 */
 	public void run() {
 		buildLists();
-	
 		/* Start Swing graphics */
 		try {
 			Outer instance = new Outer();
@@ -1258,12 +1301,18 @@ public class MidiRouter implements Runnable{
 	/**
 	 * Test driver.
 	 * 
-	 * @param args not used in this application
+	 * @param args first argument can optionally run test cases
 	 */
 	public static void main(String[] args) {
 		MidiRouter instance = new MidiRouter();
-		instance.run();
-		// instance.testDisplayFrame();
-		// instance.testLogReceiver();
+		if (args.length == 0) {
+			instance.run();
+		}
+		if (args[0].equalsIgnoreCase("display")) {
+			instance.testDisplayFrame();
+		}
+		if (args[0].equalsIgnoreCase("log")) {
+			instance.testLogReceiver();
+		}
 	}
 }
