@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 // import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiDevice;
@@ -628,7 +629,7 @@ public class MidiRouter implements Runnable{
 				throws MidiUnavailableException, IOException, InvalidMidiDataException {
 			System.out.println("Running Connection.openConnection");
 
-			musicStart = calendar.getTimeInMillis();
+			musicStart = (new Date()).getTime();
 			if (destType == specType.DEVICE || destType == specType.INFO) {
 				if (!destDevice.isOpen()) {
 					System.out.println("     Open destination device");
@@ -1077,7 +1078,7 @@ public class MidiRouter implements Runnable{
 				String micros = String.format("%06d", timeStamp % 1000000l);
 				build.append(" " + seconds + "." + micros + " ");
 			} else {
-				long time = calendar.getTimeInMillis() - musicStart;
+				long time = (new Date()).getTime() - musicStart;
 				String seconds = String.format("%6d", time / 1000l);
 				String millis = String.format("%03d", time % 1000l);
 				build.append(" " + seconds + "." + millis + " ");
@@ -1307,6 +1308,7 @@ public class MidiRouter implements Runnable{
 		MidiRouter instance = new MidiRouter();
 		if (args.length == 0) {
 			instance.run();
+			return;
 		}
 		if (args[0].equalsIgnoreCase("display")) {
 			instance.testDisplayFrame();
