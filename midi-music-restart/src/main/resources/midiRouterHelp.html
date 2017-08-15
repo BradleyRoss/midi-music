@@ -37,8 +37,10 @@
    so that other activities can be carried out.</li>
 </ul>
 
-<p><b>Action with log:</b>  Not tested</p>
-<p><b>Action without log:</b> Not tested</p>
+<p><b>Action with log:</b>  Not tested.  Should be the same
+      as playing MIDI file on software synthesizer.</p>
+<p><b>Action without log:</b> Not tested.  Should be the same as
+      playing MIDI file on software sequencer.</p>
 
 <h2>Sending Keyboard Actions to Synthesizer</h2>
 <ul>
@@ -52,8 +54,10 @@
    Close Connection</i> can then be used to close the task
    so that other activities can be carried out.</li>
 </ul>
-<p><b>Action with log:</b> Keyboard actions appear in log. No sound.</p>
-<p><b>Action without log:</b> No sound</p>
+<p><b>Action with log:</b> Keyboard actions appear in log. Sounds play when keys
+      pressed.  Requires CoreMidi4J jar file to be in CLASSPATH.</p>
+<p><b>Action without log:</b> Sound plays if CoreMidi4J jar file is in
+      CLASSPATH.</p>
 
 <h2>Sending Keyboard Actions to External Synthesizer</h2>
 <ul>
@@ -67,8 +71,10 @@
    Close Connection</i> can then be used to close the task
    so that other activities can be carried out.</li>
 </ul>
-<p><b>Action with log:</b> Not tested</p>
-<p><b>Action without log:</b> Not tested</p>
+<p><b>Action with log:</b> Not tested.  Should be the same as sending
+      keyboard actions to software synthesizer.</p>
+<p><b>Action without log:</b> Not tested. Should be the same as
+      sending keyboard actions to software synthesizer.</p>
 
 <h2>Sending Keyboard Actions to MIDI File</h2>
 <ul>
@@ -81,8 +87,8 @@
    CloseConnection</i> will write the file and close the
    connection.</li>
 </ul>
-<p><b>Action with log:</b> Not tested</p>
-<p><b>Action without log:</b> Not tested</p>
+<p><b>Action with log:</b> Not working yet</p>
+<p><b>Action without log:</b> Not working yet</p>
 
 </body>
 </html>

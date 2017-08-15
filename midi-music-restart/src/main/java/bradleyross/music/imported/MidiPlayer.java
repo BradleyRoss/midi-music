@@ -19,7 +19,7 @@ import javax.sound.midi.MidiUnavailableException;
  * <p>The first and only parameter is the name of the file to be played.</p>
  * 
  * <p>This is based on the GitHub Gist item <a href="http://gist.github.com/indy/360540"
- *    target-"_blank">indy/play_midi_filejava</a>.  It was mentioned in
+ *    target="_blank">indy/play_midi_filejava</a>.  It was mentioned in
  *    <a href="http://blog.taragana.com/index.php/archive/how-to-play-a-midi-file-from-a-java-application/"
  *    target="_blank">
  *    http://blog.taragana.com/index.php/archive/how-to-play-a-midi-file-from-a-java-application/</a></p>
@@ -28,17 +28,18 @@ import javax.sound.midi.MidiUnavailableException;
  */
 
 public class MidiPlayer {
-	/**
+
+	protected String args[];
+	public MidiPlayer(String value[]) {
+		args = value;
+	}
+		/**
 	 * Main driver program.
 	 * 
 	 * <p>The code for verifying that it is a MIDI file needs to be improved.</p>
 	 * 
 	 * @param args The first and only argument is the name of the file to be played
 	 */
-	protected String args[];
-	public MidiPlayer(String value[]) {
-		args = value;
-	}
 	public static void main(String args[]) {
 		MidiPlayer instance = new MidiPlayer(args);
 		instance.run();

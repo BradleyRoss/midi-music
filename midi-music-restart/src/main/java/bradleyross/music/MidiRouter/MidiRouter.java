@@ -24,20 +24,24 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiUnavailableException;
+// import java.util.GregorianCalendar;
 import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.Synthesizer;
-import javax.sound.midi.Transmitter;
+// import javax.sound.midi.MidiChannel;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiMessage;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Receiver;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Sequencer;
-import javax.sound.midi.Receiver;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Synthesizer;
+import javax.sound.midi.Track;
+import javax.sound.midi.Transmitter;
 // import javax.sound.midi.MidiDeviceReceiver;
 // import javax.sound.midi.MidiDeviceTransmitter;
-import javax.sound.midi.MidiMessage;
-import javax.sound.midi.MidiChannel;
+
+
 import javax.swing.SwingUtilities;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -63,7 +67,7 @@ import javax.swing.JLabel;
  *    same MidiDevice.Info - The answer is no when the MIDI device is
  *    a software synthesizer or sequencer.</p>
  * 
- * @see FlowLayout
+ *
  * @see GridLayout
  * @see GridBagLayout
  * @see BoxLayout
@@ -74,7 +78,22 @@ public class MidiRouter implements Runnable{
 	 * A value of zero means no diagnostic output, while 
 	 * higher values create more output.
 	 */
-	protected int debugFlag = 1;
+	protected static int debugFlag = 1;
+	public static void setDebugFlag(int value) {
+		debugFlag = value;
+	}
+	public static int getDebugFlag() {
+		return debugFlag;
+	}
+	/**
+	 * if true, use CoreMidi4J instead of Core Java.
+	 */
+	protected boolean useCoreMidi4J = false;
+	/**
+	 * Use one {@link Connection} object for both the data
+	 * flow and logging.
+	 */
+	protected boolean useCombinedConnection = true;
 	/**
 	 * Outermost panel for the main window.
 	 */
@@ -136,7 +155,7 @@ public class MidiRouter implements Runnable{
 	 * information and displays the data in a window.
 	 */
 	protected LogReceiver logReceiver;
-	protected GregorianCalendar calendar;
+	// protected GregorianCalendar calendar;
 	/**
 	 * Time MIDI connection was opened.
 	 */
@@ -178,10 +197,16 @@ public class MidiRouter implements Runnable{
 		/**
 		 * Specifying a {@link MidiDevice.Info} object.
 		 */
-		INFO }
+		INFO, 
+		/**
+		 * Value has not been set
+		 * 
+		 */
+		NONE
+	}
 	public MidiRouter() {
 		logReceiver = new LogReceiver();
-		calendar = new GregorianCalendar();
+		// calendar = new GregorianCalendar();
 	}
 	/**
 	 * Constructs the menu bar.
@@ -190,13 +215,11 @@ public class MidiRouter implements Runnable{
 	 *
 	 */
 	protected class MidiMenuBar implements ActionListener {
-
 		JMenuItem toggleLog = null;
 		/**
 		 * This is the menu bar for the application.
 		 */
 		JMenuBar menuBar = null;
-
 		/**
 		 * Constructor populates Java application menu bar.
 		 * 
@@ -328,6 +351,7 @@ public class MidiRouter implements Runnable{
 						showPopup("Problem", "No log file selected");
 					}
 				} else if (command.equalsIgnoreCase("openConnection")) {
+					if (selectionLocked) { return; }
 					selectionLocked = true;
 					if (debugFlag > 0) {
 						System.out.println("Open Connection menu item clicked");
@@ -368,7 +392,7 @@ public class MidiRouter implements Runnable{
 						showPopup("Problem", text);
 						return;
 					}
-					if (useLogWindow) {
+					if (useLogWindow && !useCombinedConnection) {
 						StringBuffer text = 
 								new StringBuffer("Starting setup of connection to log window");
 						System.out.println(text.toString());
@@ -401,9 +425,14 @@ public class MidiRouter implements Runnable{
 					if (debugFlag > 0) {
 						System.out.println("Data connection opened");
 						MidiDevice source = selectedSource.getMidiDevice();
-						StringBuffer text2 = new StringBuffer("There are " +
+						MidiDevice dest = selectedDest.getMidiDevice();
+						StringBuffer text2 = new StringBuffer("     * There are " +
 								Integer.toString(source.getTransmitters().size()) +
 								" transmitters for source");
+						text2.append(System.lineSeparator());
+						text2.append("     * There are " +
+								Integer.toString(dest.getReceivers().size()) +
+								" receivers for destination");
 						System.out.println(text2.toString());
 					}
 					if (selectedSource.isSequencer) {
@@ -414,17 +443,35 @@ public class MidiRouter implements Runnable{
 						Sequencer sequencer = (Sequencer) selectedSource.getMidiDevice();
 						sequencer.setSequence(sequence2);
 						sequencer.start();
+					} else if (selectedDest.isSequencer) {
+						Sequencer recorder = (Sequencer) selectedDest.getMidiDevice();
+						Sequence sequence = recorder.getSequence();
+						Track track = sequence.createTrack();
+						recorder.recordEnable(track, -1);
+						recorder.startRecording();
 					}
+
 				} else if (command.equalsIgnoreCase("closeConnection")) {
+					if (selectedDest.isSequencer) {
+						Sequencer recorder = (Sequencer) selectedDest.getMidiDevice();
+						recorder.stopRecording();
+						Sequence sequence = recorder.getSequence();
+						int[] types = MidiSystem.getMidiFileTypes(sequence);
+						for (int i = 0; i < types.length; i++) {
+							System.out.println(Integer.toString(types[i]));
+						}
+						MidiSystem.write(sequence, types[0], outputFile);
+					}
+					if (!selectionLocked) { return; }
 					selectionLocked = false;
 					connection.closeConnection();
 					System.out.println("Data connection closed");
-					if (useLogWindow) {
+					if (useLogWindow && !useCombinedConnection) {
 						logConnection.closeConnection();
 						System.out.println("Log connection closed");
 					}
-					selectedSource.getMidiDevice().close();
-					selectedDest.getMidiDevice().close();
+					// selectedSource.getMidiDevice().close();
+					// selectedDest.getMidiDevice().close();
 				} else if (command.equalsIgnoreCase("toggleLog")) {
 					if (selectionLocked) { return; }
 					if (useLogWindow) {
@@ -460,12 +507,23 @@ public class MidiRouter implements Runnable{
 	 */
 	protected class Connection {
 		/**
+		 * sends incoming messages to multiple destinations.
+		 */
+		protected Splitter splitter = new Splitter();
+		/**
 		 * Type of specification for the source of the connection.
 		 */
-		protected specType sourceType;
+		protected specType sourceType = specType.NONE;
+		/**
+		 * {@link MidiDevice.Info} object for the source
+		 * of the connection.
+		 */
 		protected MidiDevice.Info sourceInfo = null;
+		/**
+		 * Device that is source of connection.
+		 */
 		protected MidiDevice sourceDevice = null;
-		protected Transmitter sourceTransmitter = null;
+		// protected Transmitter sourceTransmitter = null;
 		protected boolean sourceIsSequencer = false;
 		protected boolean sourceIsSynthesizer = false;
 		protected File sourceFile = null;
@@ -496,11 +554,11 @@ public class MidiRouter implements Runnable{
 		 * Specify device providing input to connection.
 		 * <p>This method is deprecated because there is a problem
 		 *    with the Java code when dealing with software synthesizers
-		 *    and sequencers.  {@link MidiDevice.getDeviceInfo()} and
-		 *    {@link MidiSystem.getMidiDevice(MidiDevice.Info)} are not
+		 *    and sequencers.  {@link MidiDevice#getDeviceInfo()} and
+		 *    {@link MidiSystem#getMidiDevice(MidiDevice.Info)} are not
 		 *    inverse functions in this situation.</p>
 		 *    
-		 * @param input device
+		 * @param value input device
 		 */
 		@Deprecated
 		public void setSourceInfo(MidiDevice.Info value) {
@@ -532,7 +590,6 @@ public class MidiRouter implements Runnable{
 			}
 			sourceType = specType.TRANSMITTER;
 			transmitter = value;
-			sourceTransmitter = value;
 		}
 		public MidiDevice.Info getSourceInfo() {
 			return sourceInfo;
@@ -546,15 +603,20 @@ public class MidiRouter implements Runnable{
 		/**
 		 * Type of specification for the destination of the connection.
 		 */
-		protected specType destType;
+		protected specType destType = specType.NONE;
 		protected MidiDevice.Info destInfo = null;
 		protected MidiDevice destDevice = null;
-		protected Receiver destReceiver = null;
+		// protected Receiver destReceiver = null;
 		protected boolean destIsSequencer = false;
 		protected boolean destIsSynthesizer  = false;
 		protected File destFile = null;
 		protected boolean active = false;
-		public void setDestDevice(MidiDevice value) {
+		/**
+		 * Specify the MIDI device to be used for the destination.
+		 * @param value MidiDevice object representing destination
+		 * @throws MidiUnavailableException
+		 */
+		public void setDestDevice(MidiDevice value) throws MidiUnavailableException {
 			if (value == null) {
 				throw new NullPointerException("Input value is null");
 			}
@@ -571,14 +633,16 @@ public class MidiRouter implements Runnable{
 				destIsSynthesizer = true;
 				((Synthesizer) destDevice).getDefaultSoundbank();
 			}
+
+
 		}
 		/**
 		 * Specify MIDI device to receive information from connection.
 		 * 
 		 * <p>This method is deprecated because there is a problem
 		 *    with the Java code when dealing with software synthesizers
-		 *    and sequencers.  {@link MidiDevice.getDeviceInfo()} and
-		 *    {@link MidiSystem.getMidiDevice(MidiDevice.Info)} are not
+		 *    and sequencers.  {@link MidiDevice#getDeviceInfo()} and
+		 *    {@link MidiSystem#getMidiDevice(MidiDevice.Info)} are not
 		 *    inverse functions in this situation.</p>
 		 *    
 		 * @param value device receiving information from connection
@@ -613,10 +677,10 @@ public class MidiRouter implements Runnable{
 			}
 			destType = specType.RECEIVER;
 			receiver = value;
-			destReceiver = value;
+
 		}
 		public Receiver getDestReceiver() {
-			return destReceiver;
+			return receiver;
 		}
 		public void setDestFile(File value) {
 			destFile = value;
@@ -638,58 +702,103 @@ public class MidiRouter implements Runnable{
 					System.out.println("     Destination device was open");
 				}
 				receiver = 	destDevice.getReceiver();
-				destReceiver = receiver;
-				if (Synthesizer.class.isAssignableFrom(destDevice.getClass())) {
-					Synthesizer synth = (Synthesizer) destDevice;
-					MidiChannel[] channels = synth.getChannels();
-					/* 
-					 * Set a starting value for the instrument
-					 * 
-					 */
-					System.out.println("     Set default instrument for dest.");
-					for (MidiChannel item : channels) {
-						item.programChange(0, 45);
-					}
-				}
-			} else if (destType == specType.RECEIVER) {
 
+
+			} else if (destType == specType.RECEIVER) {
+				;
 
 			} else {
 				System.out.println("Receiver not set");
 			}
 			if (sourceType == specType.DEVICE || sourceType == specType.INFO) {
-				transmitter = sourceTransmitter;
+
 				if (!sourceDevice.isOpen()) {
 					System.out.println("     Opening source device");
 					sourceDevice.open();
 				} else {
 					System.out.println("     Source device was open");
 				}
-
 				transmitter = sourceDevice.getTransmitter();
-				sourceTransmitter = transmitter;
 			} else if (sourceType == specType.TRANSMITTER) {
-
+				;
 			} else {
 				System.out.println("Transmitter not set");
 			}
-			transmitter.setReceiver(receiver);
+			if (debugFlag > 0) {
+				if (destType == specType.DEVICE) {
+					int rcvrCount = destDevice.getReceivers().size();
+					System.out.println("     Dest. has " + Integer.toString(rcvrCount) +
+							" receivers");
+				}
+				if (sourceType == specType.DEVICE) {
+					int transCount = sourceDevice.getTransmitters().size();
+					System.out.println("    Source has " + Integer.toString(transCount) +
+							" transmitters");
+				}
+			}
+			if (destType == specType.DEVICE &&
+					Synthesizer.class.isAssignableFrom(destDevice.getClass())) {
+				ShortMessage temp = 
+						new ShortMessage(ShortMessage.PROGRAM_CHANGE, 20, 100);
+				receiver.send(temp, -1l);
+			}
+			splitter.clear();
+			splitter.addReceiver(receiver);
+			if (useCombinedConnection && useLogWindow) {
+				splitter.addReceiver(logReceiver);
+			}
+			if (debugFlag > 0) {
+				int rcvrCount = splitter.getReceivers().size();
+				System.out.println("Splitter has " + Integer.toString(rcvrCount) +
+						" receivers");
+			}
+			transmitter.setReceiver(splitter);
 			active = true;
 		}
 		public void closeConnection() throws MidiUnavailableException {
 			System.out.println("Calling Connection.closeConnection");
-			if (sourceType != specType.TRANSMITTER) {
-				transmitter.close();
-				int xmtrCount = sourceDevice.getTransmitters().size();
-				System.out.println(Integer.toString(xmtrCount) + " transmitters for source");
-			}
-			if (destType != specType.RECEIVER) {
-				receiver.close();
-				int rcvrCount = destDevice.getReceivers().size();
-				System.out.println(Integer.toString(rcvrCount) + " receivers for dest.");
-			}
-			active = false;
 
+			if (sourceType == specType.DEVICE || sourceType == specType.INFO) {
+				int xmtrCount;
+				if (!sourceDevice.isOpen()) {
+					System.out.println("    Transmitting device is closed");
+				} else {
+					if (debugFlag > 0) {
+						xmtrCount = sourceDevice.getTransmitters().size();
+						System.out.println("     " +
+								Integer.toString(xmtrCount) + " transmitters for source");
+					}
+					transmitter.close();
+					if (debugFlag > 0) {
+						System.out.println("     Closing transmitter");
+						xmtrCount = sourceDevice.getTransmitters().size();
+						System.out.println("     " +
+								Integer.toString(xmtrCount) + " transmitters for source");
+					}
+				}
+			}
+			if (destType == specType.DEVICE || destType == specType.INFO) {
+				int rcvrCount;
+				if (!destDevice.isOpen()) {
+					System.out.println("     Receiving device is closed");
+				} else {
+					if (debugFlag > 0) {
+						rcvrCount = destDevice.getReceivers().size();
+						System.out.println("     " + 
+								Integer.toString(rcvrCount) + " receivers for dest.");
+						System.out.println("     Closing receiver");
+					}
+					receiver.close();
+					if (debugFlag > 0) {
+						rcvrCount = destDevice.getReceivers().size();
+						System.out.println("     " + 
+								Integer.toString(rcvrCount) + " receivers for dest.");
+					}
+				}
+			}
+			destType = specType.NONE;
+			sourceType = specType.NONE;
+			active = false;
 		}
 	}
 	/**
@@ -774,7 +883,7 @@ public class MidiRouter implements Runnable{
 		 * Specify the MIDI device using a {@link MidiDevice.Info} object.
 		 * 
 		 * <p>This is deprecated since 
-		 *    {@link MidiSystem.getMidiDevice(MidiDevice.Info)} can't 
+		 *    {@link MidiSystem#getMidiDevice(MidiDevice.Info)} can't 
 		 *    be relied upon to identify a single device, especially when
 		 *    dealing with synthesizers and sequencers.  The problem
 		 *    may be related to software MIDI devices.</p>
@@ -923,6 +1032,38 @@ public class MidiRouter implements Runnable{
 		}
 	}
 	/**
+	 * Copies message from transmitter to multiple receivers.
+	 * @author Bradley Ross
+	 *
+	 */
+	protected class Splitter implements Receiver {
+		protected List<Receiver> receivers = new ArrayList<Receiver>();
+		public Splitter() { ; }
+		public Splitter(Receiver value) {
+			receivers.add(value);
+		}
+		public void clear() {
+			receivers.clear();
+		}
+		public List<Receiver> getReceivers() {
+			return new ArrayList<Receiver>(receivers);
+		}
+		public void addReceiver(Receiver value) {
+			receivers.add(value);
+		}
+		@Override
+		public void send(MidiMessage message, long timeStamp) {
+			long newTime = timeStamp;
+			MidiMessage newMessage = (MidiMessage) message.clone();
+			for (Receiver item : receivers) {
+				item.send(newMessage, newTime);
+			}	
+		}
+		@Override
+		public void close() { ; }
+		
+	}
+	/**
 	 * Create a widow displaying text and optionally save the text to a file.
 	 * 
 	 * @author Bradley Ross
@@ -942,11 +1083,17 @@ public class MidiRouter implements Runnable{
 			 */
 			public MenuHandler(JMenuBar menuBar) {
 				JMenu fileMenu = new JMenu("File");
-				JMenuItem saveContents = new JMenuItem("Save");
+				JMenu viewMenu = new JMenu("View");
+				JMenuItem saveContents = new JMenuItem("Save Display to File");
 				saveContents.setActionCommand("save");
 				saveContents.addActionListener(this);
+				JMenuItem clearDisplay = new JMenuItem("Clear Display");
+				clearDisplay.setActionCommand("clear");
+				clearDisplay.addActionListener(this);
 				menuBar.add(fileMenu);
+				menuBar.add(viewMenu);
 				fileMenu.add(saveContents);
+				viewMenu.add(clearDisplay);
 			}
 
 			/**
@@ -990,6 +1137,8 @@ public class MidiRouter implements Runnable{
 						showPopup("Error", text);
 						ex.printStackTrace();
 					}
+				} else if (command.equalsIgnoreCase("clear")) {
+					clear();
 				}
 			}
 		}
@@ -1041,6 +1190,9 @@ public class MidiRouter implements Runnable{
 		protected void write(String text) {
 			if (!isOpen) { return; }
 			textArea.append(text + System.lineSeparator());
+		}
+		protected void clear() {
+			textArea.setText(System.lineSeparator());
 		}
 	}
 	/**

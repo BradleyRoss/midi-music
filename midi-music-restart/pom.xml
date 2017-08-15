@@ -8,6 +8,26 @@
   	<artifactId>midi-music-parent</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
   </parent>
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+           </plugin>
+           <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
+           </plugin>
+           <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-site-plugin</artifactId>
+           </plugin>
+           <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+           </plugin>  
+      </plugins>
+  </build>
   <dependencies>
         <dependency>
         <groupId>uk.co.xfactory-librarians</groupId>

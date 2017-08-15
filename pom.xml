@@ -20,12 +20,18 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
+                    <version>3.6.2</version>
                     <configuration>
                         <source>1.7</source>
                         <target>1.7</target>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -50,15 +56,19 @@
                         <quiet>true</quiet>
                         <linksource>true</linksource>
                         <links>
-                            <link>https://docs.oracle.com/javase/8/docs/api/</link>
-                            <link>https://docs.oracle.com/javaee/6/api/</link>
+                            <link>http://docs.oracle.com/javase/8/docs/api/</link>
+                            <link>http://docs.oracle.com/javaee/6/api/</link>
                             <!-- http://www.slf4j.org/api/ -->
+                            <!--  
                             <link>http://www.jfree.org/jfreechart/api/javadoc/</link>
                             <link>http://www.jfree.org/jcommon/api/</link>
                             <link>http://jackcess.sourceforge.net/apidocs/</link>
+                            -->
+                            <!--  
                             <link>https://commons.apache.org/proper/commons-logging/apidocs/</link>
                             <link>https://logging.apache.org/log4j/2.x/log4j-api/apidocs/</link>
                             <link>http://logging.apache.org/log4j/2.x/log4j-1.2-api/apidocs/</link>
+                            -->
                         </links>
                         <offlineLinks>
                             <offlineLink>
