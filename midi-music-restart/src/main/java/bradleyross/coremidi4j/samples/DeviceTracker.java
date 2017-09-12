@@ -1,4 +1,4 @@
-package bradleyross.music.MidiRouter;
+package bradleyross.coremidi4j.samples;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -15,15 +15,24 @@ import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiSource;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDestination;
 /**
- * Provide a common tool for testing MIDI behavior and supporting 
- * MIDI classes.
+ * Example of getting unique ID using CoreMidi4J by using explicit casting of MidiDevice
+ * and MidiDevice.Info to carry out narrowing conversion to make more information
+ * visible.
  * 
  * @author Bradley Ross
  *
  */
 public class DeviceTracker {
 	protected class DeviceInfo {
+		/**
+		 * {@link MidiDevice} (or subclass) object that provides
+		 * information about a MIDI device.
+		 */
 		protected MidiDevice device = null;
+		/**
+		 * {@link MidiDevice} (or subclass) object that provides
+		 * information to identify a MIDI device.
+		 */
 		protected MidiDevice.Info info = null;
 		protected boolean isSequencer = false;
 		protected boolean isSynthesizer = false;
@@ -66,12 +75,12 @@ public class DeviceTracker {
 			} else {
 				isCoreMidiDestination = false;
 			}
-			uniqueID = -9999;
+			uniqueID = 0xFFFFFFFF;
 			endPointReference = -9999;
 			if (CoreMidiDeviceInfo.class.isAssignableFrom(info.getClass())) {
 				// System.out.println("Getting extended information for device");
 				CoreMidiDeviceInfo coreInfo = (CoreMidiDeviceInfo) info;
-				uniqueID = coreInfo.getUniqueID();
+				uniqueID = coreInfo.getdeviceUniqueID();
 				informationString = coreInfo.getInformationString();
 				endPointReference = coreInfo.getEndPointReference();
 			}
@@ -88,12 +97,14 @@ public class DeviceTracker {
 			out.println(sp5 + "Vendor: " + info.getVendor());
 			out.println(sp5 + "Version: " + info.getVersion());
 			out.println(sp5 + "Device Class: " + device.getClass());
-			out.println(sp5 + "Info Class: " + info.getClass());
-			out.println(sp5 + "Unique ID: " + String.format("%08X", uniqueID));
-			out.println(sp5 + "End Point Reference: " + Integer.toString(endPointReference));
-			out.println(sp5 + "Information String: " + informationString);
+			out.println(sp5 + "Info Class: " + info.getClass());			
+			if (CoreMidiDeviceInfo.class.isAssignableFrom(info.getClass())) {
+				out.println(sp5 + "Unique ID: " + String.format("%08X", uniqueID));
+				out.println(sp5 + "End Point Reference: " + Integer.toString(endPointReference));
+				out.println(sp5 + "Information String: " + informationString);
+			}
 			out.println(sp5 + "Is Sequencer: " + Boolean.toString(isSequencer));
-			out.println(sp5 + "Is Synthesizer: " + Boolean.toString(isSequencer));
+			out.println(sp5 + "Is Synthesizer: " + Boolean.toString(isSynthesizer));
 			out.println(sp5 + "CoreMidiDestination: " + Boolean.toString(isCoreMidiDestination));
 			out.println(sp5 + "CoreMidiSource: " + Boolean.toString(isCoreMidiSource));
 			if (maxTransmitters < 0) {
@@ -120,6 +131,18 @@ public class DeviceTracker {
 		for (MidiDevice.Info item : infoList) {
 			try {
 				DeviceInfo tracker = new DeviceInfo(item);
+				System.out.println("Using CoreMidiDeviceProvider#getMidiDeviceInfo()");
+				System.out.println(tracker.toString());
+				System.out.println(" *****   *****   *****   *****");
+			} catch (MidiUnavailableException ex) {
+				ex.printStackTrace();
+			}
+		}
+		MidiDevice.Info[] infoList2 = MidiSystem.getMidiDeviceInfo();
+		for (MidiDevice.Info item : infoList2) {
+			try {
+				DeviceInfo tracker = new DeviceInfo(item);
+				System.out.println("Using MidiSystem#getMidiDeviceInfo()");
 				System.out.println(tracker.toString());
 				System.out.println(" *****   *****   *****   *****");
 			} catch (MidiUnavailableException ex) {
@@ -132,12 +155,9 @@ public class DeviceTracker {
 	 * @param args  not used
 	 */
 	public static void main(String[] args) {
-		try {
-			Class.forName("uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider");
-			DeviceTracker instance = new DeviceTracker();
-			instance.run();
-		} catch (ClassNotFoundException ex) {
-			ex.printStackTrace();
-		}
+
+		// Class.forName("uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider");
+		DeviceTracker instance = new DeviceTracker();
+		instance.run();
 	}
 }

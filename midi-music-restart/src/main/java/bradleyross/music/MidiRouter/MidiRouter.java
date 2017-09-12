@@ -28,6 +28,7 @@ import java.util.Date;
 import javax.sound.midi.InvalidMidiDataException;
 // import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiDevice.Info;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
@@ -151,7 +152,7 @@ public class MidiRouter implements Runnable{
 	protected Listing selectedDest = null;
 	protected Connection connection = new Connection();
 	/**
-	 * This acts as a {@Link Receiver} of MIDI
+	 * This acts as a {@link Receiver} of MIDI
 	 * information and displays the data in a window.
 	 */
 	protected LogReceiver logReceiver;
@@ -195,7 +196,7 @@ public class MidiRouter implements Runnable{
 		 */
 		DEVICE, 
 		/**
-		 * Specifying a {@link MidiDevice.Info} object.
+		 * Specifying a {@link Info MidiDevice.Info} object.
 		 */
 		INFO, 
 		/**
@@ -223,7 +224,7 @@ public class MidiRouter implements Runnable{
 		/**
 		 * Constructor populates Java application menu bar.
 		 * 
-		 * @param value JMenuBar structure belonging to {@link frame}.
+		 * @param value JMenuBar structure belonging to {@link #frame}.
 		 */
 		public MidiMenuBar(JMenuBar value) {
 			menuBar = value;
@@ -515,7 +516,7 @@ public class MidiRouter implements Runnable{
 		 */
 		protected specType sourceType = specType.NONE;
 		/**
-		 * {@link MidiDevice.Info} object for the source
+		 * {@link Info} object for the source
 		 * of the connection.
 		 */
 		protected MidiDevice.Info sourceInfo = null;
@@ -880,10 +881,10 @@ public class MidiRouter implements Runnable{
 			createComponent();
 		}
 		/**
-		 * Specify the MIDI device using a {@link MidiDevice.Info} object.
+		 * Specify the MIDI device using a {@link Info} object.
 		 * 
 		 * <p>This is deprecated since 
-		 *    {@link MidiSystem#getMidiDevice(MidiDevice.Info)} can't 
+		 *    {@link MidiSystem#getMidiDevice(javax.sound.midi.MidiDevice.Info)} can't 
 		 *    be relied upon to identify a single device, especially when
 		 *    dealing with synthesizers and sequencers.  The problem
 		 *    may be related to software MIDI devices.</p>
@@ -985,7 +986,7 @@ public class MidiRouter implements Runnable{
 		}
 		/**
 		 * Depending on the subclass, this method will set either
-		 * {@link selectedSource} or {@link selectedDest}.
+		 * {@link #selectedSource} or {@link #selectedDest}.
 		 * @param value logical value to be used
 		 */
 		protected abstract void setSelectedValue(Listing value); 
